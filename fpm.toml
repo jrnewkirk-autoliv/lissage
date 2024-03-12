@@ -1,0 +1,14 @@
+name = "lissage"
+version = "0.1.0"
+license = "license"
+author = "jrnewkirk-autoliv"
+maintainer = "joseph.newkirk@autoliv.com"
+copyright = "Copyright 2024, jrnewkirk-autoliv"
+[build]
+auto-executables = true
+auto-tests = true
+auto-examples = true
+[install]
+library = false
+[dependencies]
+csv-fortran = { git="https://github.com/jacobwilliams/csv-fortran.git" }
