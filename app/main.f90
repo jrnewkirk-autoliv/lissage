@@ -4,7 +4,6 @@ program main
   use data_in_m, only : input_data_t
 
   ! implicit none
-
   
     real(kind=real64), allocatable :: all_data(:,:)
     real(kind=real64), allocatable :: b(:)
@@ -14,13 +13,13 @@ program main
     ! type(inputs_t) :: setup_conditions
     integer :: j
 
-    type(input_data_t), dimension(1001) :: curves_in
+    type(input_data_t), allocatable, dimension(:) :: curves_in
     type(input_data_t) :: x
     x%time = 5
     x%pressure = 50
 
     filename = 'D:\Fortran\Lissage\output.txt'  ! replace with your filename
-
+    ! print *, inquire(file = filename)
     open(unit=10, file=filename, status='old', action='read')
     do
         read(10, '(a)', iostat=stat) line
@@ -28,19 +27,12 @@ program main
         n = n + 1
     end do
     rewind(10)    
-
-    do i = 1, n
-      read(10,*) curves_in(i)
-    end do 
-
-
-    ! allocate(all_data(n,2))
-
-    ! read(10,*,iostat=stat) all_data
+    allocate(curves_in(n))
+    read(10,*) curves_in
     close(10)
-    curves_in%pressure = curves_in%ConvertToPa()
-    write(*,'(f20.7)') curves_in%pressure!, curves_in(1)%time!, curves_in%ConvertToPa()
-    ! write(*, *) curves_in%ConvertToPa()
+    ! curves_in%pressure = curves_in%ConvertToPa()
+    ! write(*,'(f20.7)') curves_in%time!, curves_in(1)%time!, curves_in%ConvertToPa()
+     write(*, *) curves_in%ConvertToPa()
     ! write(*, '(i11)')  size(all_data,2)
     ! print *, fstat(filename)
 
