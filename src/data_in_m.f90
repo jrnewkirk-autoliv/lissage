@@ -3,8 +3,8 @@ use iso_fortran_env, only : real64
 implicit none
 
 type :: input_data_t
-      real(kind = real64) :: time
-      real(kind = real64) :: pressure
+      real(kind=real64) :: time
+      real(kind=real64) :: pressure
     contains
         procedure, public :: ConvertToPa
 end type input_data_t

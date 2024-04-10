@@ -3,11 +3,11 @@ implicit none
 
 contains
 
-    module procedure GetPressure 
-        GetPressure = self%inp_data(1:self%last,2)*1.0e6
+    module procedure FindMax
+        ! press_data => self%input_curve%pressure
+        Peak%PressIndex = maxloc(self%press)
+        print *, Peak%PressIndex
+        ! sPeak%PressValue = press_data(Peak%PressIndex)
     end procedure
 
-    module procedure GetTime 
-        GetTime = self%inp_data(1:self%last,1)
-    end procedure
 end submodule
