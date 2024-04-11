@@ -2,6 +2,7 @@ program main
   
   use iso_fortran_env, only : real64
   use data_in_m, only : input_data_t
+  use spline_interp_m
   implicit none
   ! implicit none
     real(kind = real64) :: Ap_x = 5, Bp_x = 10, Cp_x = 50
@@ -15,12 +16,14 @@ program main
     character(len=60) :: filename
     integer :: N1_matrix(N1), N2_matrix(N2), N3_matrix(N3)
     real(kind = real64) :: A_line, B_line, tt0, t_milieu
+    integer :: unit, status
 
     ! type(inputs_t) :: setup_conditions
     integer :: j
     type(input_data_t), allocatable, dimension(:) :: curves_in
     real(kind = real64), allocatable, dimension(:) :: pressures
     real(kind = real64), allocatable , dimension(:) :: times
+    type(spline_t)        :: spl
     
     type targets_t
     real(kind = real64) :: time
@@ -85,10 +88,24 @@ program main
 
     write(*,'(2f30.13)') SplineSeg
     write(*, *) "Smoothing points defined - Let's spline!"
+
+    call spline_set_coeffs(SplineSeg%time, SplineSeg%pressure, N1+N2+N3, spl)
+    open(newunit=unit, file="FortranSplineOutput.txt", status='REPLACE')
+
+    
+
+    do i = 1, spl%n
+      write(unit, '(2f30.13)') spl%x(i), spl%y(i)
+    end do
+
+    close(unit)
+
+    print *, size(spl%x, dim = 1)
+
+    ! write(*,'(2f30.13)') spl%x, spl%y
+
+
 contains
-
-
-
 
 function define_intermediate_points_1(times_, pressures_, Pstart, Pstop, divisions, iteration) result(targets_out)
   real(kind = real64), intent(in), dimension(:) :: times_
