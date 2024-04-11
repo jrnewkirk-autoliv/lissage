@@ -17,20 +17,20 @@ program main
     integer :: N1_matrix(N1), N2_matrix(N2), N3_matrix(N3)
     real(kind = real64) :: A_line, B_line, tt0, t_milieu
     integer :: unit, status
-
-    ! type(inputs_t) :: setup_conditions
+    real :: startTime, stopTime
     integer :: j
     type(input_data_t), allocatable, dimension(:) :: curves_in
     real(kind = real64), allocatable, dimension(:) :: pressures
     real(kind = real64), allocatable , dimension(:) :: times
-    type(spline_t)        :: spl
-    
+    type(spline_t)        :: spl    
     type targets_t
     real(kind = real64) :: time
     real(kind = real64) :: pressure    
     end type 
     type(targets_t), allocatable, dimension(:) :: SplineSeg
     type(targets_t) :: A,B,C
+
+    call cpu_time(startTime)
 
     filename = 'D:\Fortran\Lissage\output2.txt'  ! replace with your filename
     open(unit=10, file=filename, status='old', action='read')
@@ -55,8 +55,6 @@ program main
     A = find_and_interpolate(curves_in%time, pressures, Ap_x)
     B = find_and_interpolate(curves_in%time, pressures, Bp_x)
     C = find_and_interpolate(curves_in%time, pressures, Cp_x)
-    print *, "PTx: ", Ptx, "A: ", A, "B: ", B, "C: ", C
-    print *, "Tfin", Tfin, "Tx", curves_in(PTx_loc)%time
 
     allocate(SplineSeg(N1+N2+N3))
 
@@ -64,13 +62,13 @@ program main
       SplineSeg(i) =  define_intermediate_points_1(curves_in%time, pressures  &
       , A%pressure, C%pressure, N1, i)
     end do
-    i = 1
+
     do i =1, N2
       print *, i
       SplineSeg(i + N1) =  define_intermediate_points_2_3(curves_in%time, pressures  &
       , C%time, curves_in(PTx_loc)%time, N2, i)
     end do
-    i = 1
+
     do i =1, N3
       print *, i
       SplineSeg(i + N1 + N2) =  define_intermediate_points_2_3(curves_in%time, pressures  &
@@ -86,9 +84,6 @@ program main
     SplineSeg(N1+N2+N3)%time = curves_in(n-2)%time
     SplineSeg(N1+N2+N3)%pressure = pressures(n-2)
 
-    write(*,'(2f30.13)') SplineSeg
-    write(*, *) "Smoothing points defined - Let's spline!"
-
     call spline_set_coeffs(SplineSeg%time, SplineSeg%pressure, N1+N2+N3, spl)
     open(newunit=unit, file="FortranSplineOutput.txt", status='REPLACE')
 
@@ -99,8 +94,8 @@ program main
     end do
 
     close(unit)
-
-    print *, size(spl%x, dim = 1)
+    call cpu_time(stopTime)
+    print *, stopTime
 
     ! write(*,'(2f30.13)') spl%x, spl%y
 
