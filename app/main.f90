@@ -1,6 +1,6 @@
 program main
   
-  use iso_fortran_env, only : real64
+  use iso_fortran_env, only : real64  
   use data_in_m, only : input_data_t
   use spline_interp_m
   implicit none
@@ -22,6 +22,7 @@ program main
     type(input_data_t), allocatable, dimension(:) :: curves_in
     real(kind = real64), allocatable, dimension(:) :: pressures
     real(kind = real64), allocatable , dimension(:) :: times
+    real(kind = real64) :: test
     type(spline_t)        :: spl    
     type targets_t
     real(kind = real64) :: time
@@ -85,20 +86,15 @@ program main
     SplineSeg(N1+N2+N3)%pressure = pressures(n-2)
 
     call spline_set_coeffs(SplineSeg%time, SplineSeg%pressure, N1+N2+N3, spl)
-    open(newunit=unit, file="FortranSplineOutput.txt", status='REPLACE')
 
-    
-
-    do i = 1, spl%n
-      write(unit, '(2f30.13)') spl%x(i), spl%y(i)
+    open(newunit=unit, file="FortranInterpolatedSplineOutput.txt", status='REPLACE')
+    do i = 1, n
+      write(unit,'(2f30.13)') curves_in(i)%time, spline_evaluate(curves_in(i)%time, spl)
     end do
-
     close(unit)
+
     call cpu_time(stopTime)
     print *, stopTime
-
-    ! write(*,'(2f30.13)') spl%x, spl%y
-
 
 contains
 

@@ -1,0 +1,98 @@
+clear; clc(); close(winsid())
+exec("C:\Users\joseph.newkirk\OneDrive - Autoliv\Programming Tools\Scilab Resources\FunctionLibrary\PlotStandardization\V2\AlvPlotStandardizationTools.sci", -1)
+
+data_dir = "D:\Fortran\Lissage"; cd(data_dir)
+
+dat.RAW = csvRead("PtankRaw.csv"); 
+dat.filtered = csvRead("Filtered.csv");
+dat.ScilabLissage = csvRead("Plissage.csv");
+cd("./Lissage")
+dat.FortranLissage = fscanfMat("FortranInterpolatedSplineOutput.txt")
+dat.FortranLissage(:,2) = dat.FortranLissage(:,2) / 1d6 - 0.086570
+
+dat.RAW = dat.RAW(dat.RAW(:,2) >0,:)
+dat.filtered = dat.filtered(dat.filtered(:,2) >0,:)
+dat.ScilabLissage = dat.ScilabLissage(dat.ScilabLissage(:,2) >0,:)
+dat.FortranLissage = dat.FortranLissage(dat.FortranLissage(:,2) >0,:)
+x_end = 50
+main = figure(1)
+//Plot pressure comparisons //
+subplot(2,2,1)
+drawlater()
+a = gca()
+e(1) = plot(dat.RAW(:,1), dat.RAW(:,2))
+e(2) = plot(dat.filtered(:,1) * 1000, dat.filtered(:,2))
+e(3) = plot(dat.ScilabLissage(:,1) * 1000, dat.ScilabLissage(:,2))
+e(4) = plot(dat.FortranLissage(:,1) * 1000, ...
+            dat.FortranLissage(:,2))
+
+leg_holder = ["Raw Data"; "Filtered"; "Scilab Lissage"; "Fortran Lissage"]
+lims = a.data_bounds
+lims(1,1) = 0;lims(2,1) = x_end; a.data_bounds = lims
+xlabel("Time (ms)")
+ylabel("Pressure (MPa)")
+legend(e, leg_holder, "legend_location", "in_lower_right")
+//alvsfs(gcf())
+
+drawnow()
+
+//Plot again using log scale // 
+subplot(2,2,2)
+drawlater()
+b = gca()
+f(1) = plot(dat.RAW(2:$,1), dat.RAW(2:$,2))
+f(2) = plot(dat.filtered(:,1) * 1000, dat.filtered(:,2))
+f(3) = plot(dat.ScilabLissage(:,1) * 1000, dat.ScilabLissage(:,2))
+f(4) = plot(dat.FortranLissage(:,1) * 1000, ...
+            dat.FortranLissage(:,2))
+b.log_flags = "nln"
+lims = b.data_bounds
+lims(1,1) = 0;lims(2,1) = x_end; b.data_bounds = lims
+xlabel("Time (ms)")
+ylabel("Pressure (MPa)")
+legend(f, leg_holder, "legend_location", "in_lower_right")
+//alvsfs(gcf())
+f(1).thickness = 1
+drawnow()
+
+//Compute 1st and 2nd derivative for the process data
+dat.d1.filtered = alvdiff(dat.filtered(:,1), dat.filtered(:,2))
+dat.d1.ScilabLissage = alvdiff(dat.ScilabLissage(:,1), dat.ScilabLissage(:,2))
+dat.d1.FortranLissage = alvdiff(dat.FortranLissage(:,1), dat.FortranLissage(:,2))
+dat.d2.filtered = alvdiff(dat.filtered(:,1), dat.d1.filtered)
+dat.d2.ScilabLissage = alvdiff(dat.ScilabLissage(:,1), dat.d1.ScilabLissage)
+dat.d2.FortranLissage = alvdiff(dat.FortranLissage(:,1), dat.d1.FortranLissage)
+
+//Plot first derivatives
+subplot(2,2,3)
+drawlater()
+c = gca()
+g(1) = plot(dat.filtered(:,1) * 1000, dat.d1.filtered)
+g(2) = plot(dat.ScilabLissage(:,1) * 1000, dat.d1.ScilabLissage)
+g(3) = plot(dat.FortranLissage(:,1) * 1000, dat.d1.FortranLissage)
+lims = c.data_bounds
+lims(1,1) = 0;lims(2,1) = x_end; c.data_bounds = lims
+xlabel("Time (ms)")
+ylabel("\frac{dP}{dt}")
+leg_holder = ["Filtered", "Scilab Lissage", "Fortran Lissage"]
+legend(g, leg_holder, "legend_location", "in_upper_right")
+drawnow()
+
+//Plot second derivatives
+subplot(2,2,4)
+drawlater()
+d = gca()
+h(1) = plot(dat.filtered(:,1) * 1000, dat.d2.filtered)
+h(2) = plot(dat.ScilabLissage(:,1) * 1000, dat.d2.ScilabLissage)
+h(3) = plot(dat.FortranLissage(:,1) * 1000, dat.d2.FortranLissage)
+lims = d.data_bounds
+lims(1,1) = 0;lims(2,1) = x_end; d.data_bounds = lims
+xlabel("Time (ms)")
+ylabel("\frac{d^2P}{dt^2}")
+leg_holder = ["Filtered", "Scilab Lissage", "Fortran Lissage"]
+legend(h, leg_holder, "legend_location", "in_upper_right")
+drawnow()
+alvsfs(main)
+e(1).thickness = 1, f(1).thickness = 1
+
+
